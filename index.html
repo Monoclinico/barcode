@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leitor de Código de Barras Code 128</title>
+    <title>Leitor de Código de Barras UPC-A</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -55,7 +55,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Leitor de Código de Barras Code 128</h1>
+        <h1>Leitor de Código de Barras UPC-A</h1>
         <input type="file" id="file-input" accept="image/*">
         <video id="scanner" hidden></video>
         <div id="result">Aguardando o código de barras...</div>
@@ -86,7 +86,7 @@
                                 }
                             },
                             decoder: {
-                                readers: ["code_128_reader"] // Define o leitor para Code 128
+                                readers: ["upc_reader"] // Mudar para o leitor UPC-A
                             }
                         }, function(err) {
                             if (err) {
@@ -121,7 +121,7 @@
                     Quagga.decodeSingle({
                         src: img.src,
                         decoder: {
-                            readers: ["code_128_reader"]
+                            readers: ["upc_reader"] // Mudar para o leitor UPC-A
                         }
                     }, function(result) {
                         if (result && result.codeResult) {
