@@ -71,9 +71,11 @@
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
                     .then(function(stream) {
-                        videoElem.srcObject = stream;  // Exibe o vídeo da câmera
+                        // Conectar o fluxo de vídeo ao elemento <video>
+                        videoElem.srcObject = stream;
                         videoElem.hidden = false;  // Torna o vídeo visível
-                        
+                        videoElem.play();  // Inicia a reprodução do vídeo
+
                         Quagga.init({
                             inputStream: {
                                 name: "Live",
