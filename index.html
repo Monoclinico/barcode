@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leitor de Código de Barras Code 128</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        video {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #live-result {
+            margin-top: 10px;
+            font-size: 18px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Leitor de Código de Barras Code 128</h1>
+        <input type="file" id="file-input" accept="image/*">
+        <video id="scanner" hidden></video>
+        <div id="result">Aguardando o código de barras...</div>
+        <div id="live-result"></div> <!-- Exibição ao vivo do código lido -->
+    </div>
+
+    <!-- Carregar QuaggaJS a partir do CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script>
+        // Função para iniciar a leitura de código de barras ao vivo
+        function startBarcodeReader(videoElem) {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: videoElem // Onde o vídeo será exibido
+                },
+                decoder: {
+                    readers: ["code_128_reader"] // Define o leitor para Code 128
+                }
+            }, function(err) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                Quagga.start(); // Inicia a leitura ao vivo
+            });
+
+            // Quando o código de barras for detectado
+            Quagga.onDetected(function(result) {
+                const code = result.codeResult.code;
+                document.getElementById("live-result").textContent = "Código lido ao vivo: " + code; // Exibe o código lido ao vivo
+            });
+        }
+
+        // Função para carregar a imagem e iniciar a leitura do código de barras
+        function readBarcodeFromImage(file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var img = new Image();
+                img.src = e.target.result;
+                img.onload = function() {
+                    Quagga.decodeSingle({
+                        src: img.src,
+                        decoder: {
+                            readers: ["code_128_reader"]
+                        }
+                    }, function(result) {
+                        if (result && result.codeResult) {
+                            document.getElementById("result").textContent = "Código lido da imagem: " + result.codeResult.code;
+                        } else {
+                            document.getElementById("result").textContent = "Código não encontrado!";
+                        }
+                    });
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Iniciar o vídeo para captura ao vivo
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            if (file) {
+                readBarcodeFromImage(file);
+            }
+        });
+
+        // Iniciar captura de vídeo ao vivo
+        window.onload = function() {
+            var videoElem = document.getElementById("scanner");
+            videoElem.hidden = false;
+            startBarcodeReader(videoElem); // Inicia a leitura ao vivo via webcam
+        };
+    </script>
+</body>
+</html>
