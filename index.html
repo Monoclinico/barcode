@@ -28,6 +28,8 @@
             max-width: 500px;
             border: 2px solid #333;
             margin-bottom: 20px;
+            display: block;
+            background: #000; /* Garante que o fundo da área de vídeo tenha cor */
         }
 
         input[type="file"] {
@@ -65,28 +67,46 @@
     <script>
         // Função para iniciar a leitura de código de barras ao vivo
         function startBarcodeReader(videoElem) {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: videoElem // Onde o vídeo será exibido
-                },
-                decoder: {
-                    readers: ["code_128_reader"] // Define o leitor para Code 128
-                }
-            }, function(err) {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                Quagga.start(); // Inicia a leitura ao vivo
-            });
+            // Verifica se o navegador suporta a captura de vídeo (webcam)
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                    .then(function(stream) {
+                        videoElem.srcObject = stream;  // Exibe o vídeo da câmera
+                        videoElem.hidden = false;  // Torna o vídeo visível
+                        
+                        Quagga.init({
+                            inputStream: {
+                                name: "Live",
+                                type: "LiveStream",
+                                target: videoElem, // Onde o vídeo será exibido
+                                constraints: {
+                                    facingMode: "environment" // Preferência pela câmera traseira (caso haja)
+                                }
+                            },
+                            decoder: {
+                                readers: ["code_128_reader"] // Define o leitor para Code 128
+                            }
+                        }, function(err) {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            }
+                            Quagga.start(); // Inicia a leitura ao vivo
+                        });
 
-            // Quando o código de barras for detectado
-            Quagga.onDetected(function(result) {
-                const code = result.codeResult.code;
-                document.getElementById("live-result").textContent = "Código lido ao vivo: " + code; // Exibe o código lido ao vivo
-            });
+                        // Quando o código de barras for detectado
+                        Quagga.onDetected(function(result) {
+                            const code = result.codeResult.code;
+                            document.getElementById("live-result").textContent = "Código lido ao vivo: " + code; // Exibe o código lido ao vivo
+                        });
+                    })
+                    .catch(function(err) {
+                        console.error("Erro ao acessar a câmera: ", err);
+                        alert("Erro ao acessar a câmera. Verifique as permissões.");
+                    });
+            } else {
+                alert("Seu navegador não suporta acesso à câmera.");
+            }
         }
 
         // Função para carregar a imagem e iniciar a leitura do código de barras
@@ -124,7 +144,6 @@
         // Iniciar captura de vídeo ao vivo
         window.onload = function() {
             var videoElem = document.getElementById("scanner");
-            videoElem.hidden = false;
             startBarcodeReader(videoElem); // Inicia a leitura ao vivo via webcam
         };
     </script>
